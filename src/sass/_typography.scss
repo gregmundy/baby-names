@@ -1,0 +1,31 @@
+.label-heading {
+  font-family: "Lato", sans-serif;
+  &--1 {
+    font-weight: 900;
+    letter-spacing: 2rem;
+    font-size: 5rem;
+    text-transform: uppercase;
+  }
+
+  &--2 {
+    font-weight: 700;
+    font-size: 2.5rem;
+    letter-spacing: 0.5rem;
+    text-transform: lowercase;
+  }
+}
+
+.name-text {
+  font-family: "Permanent Marker", sans-serif;
+  font-weight: 400;
+  font-size: 8rem;
+  letter-spacing: 0.5rem;
+
+  &--dark {
+    color: #000;
+  }
+
+  &--light {
+    color: #fff;
+  }
+}
