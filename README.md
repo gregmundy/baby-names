@@ -17,7 +17,7 @@ rebuilt in 2026 with a modern stack and a more polished design system
 
 ![Corkboard View](docs/corkboard.png)
 
-Pinned candidates render as nametags on a corkboard -- meant to mirror
+Pinned candidates render as nametags on a corkboard meant to mirror
 how parents actually live with shortlisted names.
 
 ## Tech stack
@@ -38,8 +38,7 @@ dataset.
 Names come from the [Social Security Administration's national baby
 names dataset](https://www.ssa.gov/oact/babynames/limits.html), which
 records every name given to at least five US-born children in a given
-year, going back to 1880. (I kept calling this "Census data" while
-planning the app. It isn't — the SSA maintains it. Mea culpa.)
+year, going back to 1880.
 
 The pipeline lives in `scripts/build-candidates.ts`. Run it with:
 
@@ -76,3 +75,9 @@ A couple of caveats worth knowing:
 - **SSA suppresses names with fewer than 5 occurrences per year** for
   privacy, which means very rare names look spikier in their trend
   lines than they really are.
+
+## Epilogue: Why Anna and Cora?
+
+I wish I could say this app named our girls. The truth is more embarrassing. Expectant dad brain had me spiraling — not too long, not too short, nothing they'd get made fun of for, unique but not so unique you can't find a keychain for it on vacation. So I did what a frazzled engineer does: I downloaded the SSA dataset, parsed it, and built this app.
+
+Meg watched me do all of that, then said: "Let's name them Anna and Cora. I've loved those names forever."
