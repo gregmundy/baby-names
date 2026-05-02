@@ -34,5 +34,4 @@ export const labelForCurated: Record<string, string> = {
   'just-emerging': 'Just emerging',
   'long-arc-classic': 'Long-arc classic',
   goldilocks: 'Goldilocks',
-  'sibling-fit': 'Sibling fit',
 };

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import {
   CandidateRow,
@@ -20,7 +20,77 @@ import type {
 
 const delay = (ms: number) => ({ '--delay': `${ms}ms` }) as CSSProperties;
 
-const VISIBLE_CAP = 80;
+const PAGE_SIZE = 30;
+const LEAVE_MS = 200;
+const SETTLE_MS = 20;
+const ENTER_MS = 260;
+
+const toRoman = (n: number): string => {
+  if (n <= 0) return '';
+  const map: ReadonlyArray<readonly [number, string]> = [
+    [1000, 'M'],
+    [900, 'CM'],
+    [500, 'D'],
+    [400, 'CD'],
+    [100, 'C'],
+    [90, 'XC'],
+    [50, 'L'],
+    [40, 'XL'],
+    [10, 'X'],
+    [9, 'IX'],
+    [5, 'V'],
+    [4, 'IV'],
+    [1, 'I'],
+  ];
+  let result = '';
+  let rem = n;
+  for (const [val, sym] of map) {
+    while (rem >= val) {
+      result += sym;
+      rem -= val;
+    }
+  }
+  return result;
+};
+
+type ChapterNavProps = {
+  chapter: number;
+  totalChapters: number;
+  onNavigate: (n: number) => void;
+};
+
+const ChapterNav = ({ chapter, totalChapters, onNavigate }: ChapterNavProps) => (
+  <nav
+    aria-label="Catalog chapter navigation"
+    className="flex items-baseline gap-4"
+  >
+    <div className="flex-1">
+      {chapter > 1 && (
+        <button
+          type="button"
+          onClick={() => onNavigate(chapter - 1)}
+          className="font-display italic text-base text-ink hover:text-cinnabar transition-colors"
+        >
+          ← previous chapter
+        </button>
+      )}
+    </div>
+    <p className="font-sans uppercase tracking-[0.3em] text-[10px] text-ink-soft tabular-nums whitespace-nowrap">
+      chapter {toRoman(chapter)} of {toRoman(totalChapters)}
+    </p>
+    <div className="flex-1 text-right">
+      {chapter < totalChapters && (
+        <button
+          type="button"
+          onClick={() => onNavigate(chapter + 1)}
+          className="font-display italic text-base text-ink hover:text-cinnabar transition-colors"
+        >
+          next chapter →
+        </button>
+      )}
+    </div>
+  </nav>
+);
 
 const App = () => {
   const { list, isFavorite, toggleFavorite, remove } = useShortlist();
@@ -29,9 +99,16 @@ const App = () => {
   const [curated, setCurated] = useState<CuratedList>('all');
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortKey>('rank-asc');
-  const [expanded, setExpanded] = useState(false);
+  const [chapter, setChapter] = useState(1);
+  const [isLeaving, setIsLeaving] = useState(false);
+  const [direction, setDirection] = useState<'forward' | 'backward'>('forward');
   const [corkboardOpen, setCorkboardOpen] = useState(false);
   const [pulseKey, setPulseKey] = useState<string | null>(null);
+  const catalogRef = useRef<HTMLElement>(null);
+  const catalogScrollRef = useRef<HTMLDivElement>(null);
+  const transitionTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined
+  );
 
   const results = useMemo(
     () =>
@@ -40,12 +117,25 @@ const App = () => {
         curated,
         search,
         sort,
-        shortlist: list,
       }),
-    [sex, curated, search, sort, list]
+    [sex, curated, search, sort]
   );
 
-  useEffect(() => setExpanded(false), [sex, curated, search, sort]);
+  useEffect(() => {
+    if (transitionTimer.current) {
+      clearTimeout(transitionTimer.current);
+      transitionTimer.current = undefined;
+    }
+    setChapter(1);
+    setIsLeaving(false);
+  }, [sex, curated, search, sort]);
+
+  useEffect(
+    () => () => {
+      if (transitionTimer.current) clearTimeout(transitionTimer.current);
+    },
+    []
+  );
 
   const tabCounts = useMemo(() => {
     const counts: Partial<Record<CuratedList, number>> = {
@@ -68,10 +158,31 @@ const App = () => {
     return counts;
   }, []);
 
-  const siblingFitDisabled = list.length === 0;
-  const showSiblingHint = curated === 'sibling-fit' && siblingFitDisabled;
-  const visible = expanded ? results : results.slice(0, VISIBLE_CAP);
-  const hiddenCount = results.length - visible.length;
+  const totalChapters = Math.max(1, Math.ceil(results.length / PAGE_SIZE));
+  const pageStart = (chapter - 1) * PAGE_SIZE;
+  const pageEnd = Math.min(pageStart + PAGE_SIZE, results.length);
+  const visible = results.slice(pageStart, pageEnd);
+
+  const goToChapter = (n: number) => {
+    if (transitionTimer.current || n === chapter) return;
+
+    setDirection(n > chapter ? 'forward' : 'backward');
+    setIsLeaving(true);
+
+    transitionTimer.current = setTimeout(() => {
+      const inner = catalogScrollRef.current;
+      if (inner && inner.scrollHeight > inner.clientHeight) {
+        inner.scrollTop = 0;
+      } else {
+        catalogRef.current?.scrollIntoView({ block: 'start' });
+      }
+      setChapter(n);
+      setIsLeaving(false);
+      transitionTimer.current = setTimeout(() => {
+        transitionTimer.current = undefined;
+      }, ENTER_MS);
+    }, LEAVE_MS + SETTLE_MS);
+  };
 
   const handleTogglePin = (entry: ShortlistEntry) => {
     toggleFavorite(entry);
@@ -140,7 +251,6 @@ const App = () => {
           <CuratedTabs
             value={curated}
             onChange={setCurated}
-            hasShortlist={!siblingFitDisabled}
             counts={tabCounts}
           />
           <FilterBar
@@ -157,10 +267,13 @@ const App = () => {
 
       {/* ── Body ─────────────────────────────────────────────────────── */}
       <main className="relative z-0 mx-auto max-w-7xl px-6 sm:px-10 pt-10 pb-24">
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_260px] gap-x-12 gap-y-12 items-start">
-          {/* Catalog */}
-          <section>
-            <div className="flex items-baseline justify-between mb-4">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_260px] gap-x-0 gap-y-12 items-stretch lg:h-[min(82vh,820px)]">
+          {/* Catalog — bounded reading frame on lg+, normal flow below */}
+          <section
+            ref={catalogRef}
+            className="scroll-mt-32 lg:flex lg:flex-col lg:min-h-0 lg:pr-10"
+          >
+            <div className="flex items-baseline justify-between mb-4 shrink-0">
               <h2 className="font-display italic text-xl text-ink">
                 The Catalog
               </h2>
@@ -170,13 +283,7 @@ const App = () => {
               </span>
             </div>
 
-            {showSiblingHint ? (
-              <div className="mt-8 border border-dashed border-rule rounded-md py-12 text-center">
-                <p className="font-display italic text-lg text-ink-soft">
-                  Pin at least one name to see siblings.
-                </p>
-              </div>
-            ) : results.length === 0 ? (
+            {results.length === 0 ? (
               <div className="mt-8 border border-dashed border-rule rounded-md py-12 text-center">
                 <p className="font-display italic text-lg text-ink-soft">
                   No candidates match these filters.
@@ -184,45 +291,52 @@ const App = () => {
               </div>
             ) : (
               <>
-                <ol className="border-y border-rule/60 divide-y divide-rule/40">
-                  {visible.map((c, i) => {
-                    const entry: ShortlistEntry = { name: c.name, sex: c.sex };
-                    const key = `${c.sex}:${c.name}`;
-                    return (
-                      <CandidateRow
-                        key={key}
-                        candidate={c}
-                        listIndex={i}
-                        isFavorite={isFavorite(entry)}
-                        onTogglePin={() => handleTogglePin(entry)}
-                        recentlyPinned={pulseKey === key}
-                      />
-                    );
-                  })}
-                </ol>
-                {hiddenCount > 0 && (
-                  <div className="mt-8 flex justify-center">
-                    <button
-                      type="button"
-                      onClick={() => setExpanded(true)}
-                      className="font-display italic text-base text-ink border-b border-cinnabar pb-1 hover:text-cinnabar transition-colors"
-                    >
-                      show {hiddenCount.toLocaleString()} more
-                    </button>
+                {totalChapters > 1 && (
+                  <div className="mb-4 border-b border-rule pb-3 shrink-0">
+                    <ChapterNav
+                      chapter={chapter}
+                      totalChapters={totalChapters}
+                      onNavigate={goToChapter}
+                    />
                   </div>
                 )}
-                {expanded && results.length > VISIBLE_CAP && (
-                  <div className="mt-6 flex justify-center">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setExpanded(false);
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                      }}
-                      className="font-sans uppercase tracking-[0.3em] text-[10px] text-ink-soft hover:text-ink"
-                    >
-                      collapse
-                    </button>
+
+                <div
+                  ref={catalogScrollRef}
+                  className="catalog-scroll lg:flex-1 lg:min-h-0 lg:overflow-y-auto lg:overflow-x-hidden"
+                >
+                  <ol
+                    key={chapter}
+                    className={`border-y border-rule/60 divide-y divide-rule/40 ${
+                      isLeaving
+                        ? `page-leave-${direction}`
+                        : `page-enter-${direction}`
+                    }`}
+                  >
+                    {visible.map((c, i) => {
+                      const entry: ShortlistEntry = { name: c.name, sex: c.sex };
+                      const key = `${c.sex}:${c.name}`;
+                      return (
+                        <CandidateRow
+                          key={key}
+                          candidate={c}
+                          listIndex={pageStart + i}
+                          isFavorite={isFavorite(entry)}
+                          onTogglePin={() => handleTogglePin(entry)}
+                          recentlyPinned={pulseKey === key}
+                        />
+                      );
+                    })}
+                  </ol>
+                </div>
+
+                {totalChapters > 1 && (
+                  <div className="mt-4 border-t border-rule pt-4 shrink-0">
+                    <ChapterNav
+                      chapter={chapter}
+                      totalChapters={totalChapters}
+                      onNavigate={goToChapter}
+                    />
                   </div>
                 )}
               </>

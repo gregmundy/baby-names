@@ -4,7 +4,6 @@ import { labelForCurated } from '../lib/features';
 type Props = {
   value: CuratedList;
   onChange: (v: CuratedList) => void;
-  hasShortlist: boolean;
   counts?: Partial<Record<CuratedList, number>>;
 };
 
@@ -14,33 +13,25 @@ const order: CuratedList[] = [
   'vintage-revival',
   'sweet-spot-rising',
   'just-emerging',
-  'sibling-fit',
+  'long-arc-classic',
+  'goldilocks',
 ];
 
-const CuratedTabs = ({ value, onChange, hasShortlist, counts }: Props) => {
+const CuratedTabs = ({ value, onChange, counts }: Props) => {
   return (
     <nav className="flex flex-wrap items-baseline gap-x-5 gap-y-2 -mx-1">
       {order.map((key) => {
-        const disabled = key === 'sibling-fit' && !hasShortlist;
         const active = value === key;
         const count = counts?.[key];
         return (
           <button
             key={key}
             type="button"
-            disabled={disabled}
             onClick={() => onChange(key)}
-            title={
-              disabled
-                ? 'Pin at least one name to see siblings'
-                : undefined
-            }
             className={`relative px-1 pb-1 font-display text-[15px] leading-tight transition-colors ${
               active
                 ? 'text-ink italic'
-                : disabled
-                  ? 'text-ink-soft/40 cursor-not-allowed'
-                  : 'text-ink-soft hover:text-ink'
+                : 'text-ink-soft hover:text-ink'
             }`}
           >
             {labelForCurated[key]}

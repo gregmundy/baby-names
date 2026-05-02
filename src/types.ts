@@ -33,7 +33,7 @@ export type ShortlistEntry = {
   sex: Sex;
 };
 
-export type CuratedList = 'all' | HeuristicTag | 'sibling-fit';
+export type CuratedList = 'all' | HeuristicTag;
 
 export type SortKey = 'rank-asc' | 'rank-desc' | 'trend' | 'alpha';
 

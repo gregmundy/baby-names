@@ -29,7 +29,7 @@ const CandidateRow = ({
 
   return (
     <li
-      className={`group relative grid grid-cols-[36px_minmax(0,1.4fr)_10px_minmax(0,1fr)_auto] sm:grid-cols-[36px_minmax(0,1.4fr)_10px_minmax(0,1fr)_minmax(0,1.1fr)_auto] items-center gap-x-4 gap-y-1 px-3 py-2.5 border-b border-rule/40 transition-colors duration-200 hover:bg-paper-deep/40 ${
+      className={`group relative grid grid-cols-[52px_minmax(0,1.4fr)_10px_minmax(0,1fr)_auto] sm:grid-cols-[52px_minmax(0,1.4fr)_10px_minmax(0,1fr)_minmax(0,1.1fr)_auto] items-center gap-x-4 gap-y-1 px-3 py-3.5 border-b border-rule/40 transition-colors duration-200 hover:bg-paper-deep/40 ${
         recentlyPinned ? 'pin-stripe' : ''
       }`}
     >
@@ -38,7 +38,7 @@ const CandidateRow = ({
       </span>
 
       <h3
-        className={`font-display italic leading-none truncate transition-colors ${
+        className={`font-display italic leading-[1.25] truncate py-0.5 transition-colors ${
           isFavorite ? 'text-cinnabar' : 'text-ink'
         }`}
         style={{ fontSize: 'clamp(20px, 2.2vw, 26px)' }}

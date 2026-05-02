@@ -59,8 +59,6 @@ with the heuristics that drive the curated tabs:
 - **Long-arc classic** — present nearly every year since 1880, never a
   megahit
 - **Goldilocks** — ≥80% of observed years inside rank 200–1000
-- **Sibling fit** — computed at runtime against your pinned shortlist
-  (syllable count, ending sound, length)
 
 The output is `src/data/candidates.json` — about 4,600 names (~1.2 MB)
 after filtering out the long tail. SSA refreshes the dataset once a
@@ -78,6 +76,12 @@ A couple of caveats worth knowing:
 
 ## Epilogue: Why Anna and Cora?
 
-I wish I could say this app named our girls. The truth is more embarrassing. Expectant dad brain had me spiraling — not too long, not too short, nothing they'd get made fun of for, unique but not so unique you can't find a keychain for it on vacation. So I did what a frazzled engineer does: I downloaded the SSA dataset, parsed it, and built this app.
+I wish I could say this app named our girls. The truth is more
+embarrassing. Expectant dad brain had me spiraling — not too long, not
+too short, nothing they'd get made fun of for, unique but not so unique
+you can't find a keychain for it on vacation. So I did what a frazzled
+engineer does: I downloaded the SSA dataset, parsed it, and built this
+app.
 
-Meg watched me do all of that, then said: "Let's name them Anna and Cora. I've loved those names forever."
+Meg watched me do all of that, then said: "Let's name them Anna and
+Cora. I've loved those names forever."

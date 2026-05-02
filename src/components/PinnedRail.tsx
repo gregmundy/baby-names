@@ -8,8 +8,8 @@ type Props = {
 
 const PinnedRail = ({ list, onRemove, onOpenCorkboard }: Props) => {
   return (
-    <aside className="lg:sticky lg:top-[10.5rem]">
-      <div className="flex items-baseline justify-between mb-4 pb-2 border-b border-rule">
+    <aside className="lg:flex lg:flex-col lg:h-full lg:min-h-0 lg:pl-10 lg:border-l lg:border-rule">
+      <div className="flex items-baseline justify-between mb-4 pb-2 border-b border-rule shrink-0">
         <h2 className="font-display italic text-xl text-ink">Pinned</h2>
         <span className="font-sans uppercase text-[10px] tracking-[0.3em] text-ink-soft tabular-nums">
           {String(list.length).padStart(2, '0')}
@@ -21,7 +21,7 @@ const PinnedRail = ({ list, onRemove, onOpenCorkboard }: Props) => {
           Nothing yet. Pin a name from the catalog and it lands here.
         </p>
       ) : (
-        <ul className="space-y-2">
+        <ul className="space-y-2 lg:flex-1 lg:overflow-y-auto lg:min-h-0 lg:pr-1">
           {list.map((entry, i) => {
             const rotation = ((i % 3) - 1) * 0.6;
             const sexDot = entry.sex === 'M' ? 'bg-slate-700' : 'bg-cinnabar';
@@ -59,7 +59,7 @@ const PinnedRail = ({ list, onRemove, onOpenCorkboard }: Props) => {
         type="button"
         onClick={onOpenCorkboard}
         disabled={list.length === 0}
-        className="mt-6 w-full text-left font-display italic text-sm text-ink hover:text-cinnabar disabled:text-ink-soft/40 disabled:cursor-not-allowed border-t border-rule pt-4 transition-colors flex items-center justify-between"
+        className="mt-6 w-full text-left font-display italic text-sm text-ink hover:text-cinnabar disabled:text-ink-soft/40 disabled:cursor-not-allowed border-t border-rule pt-4 transition-colors flex items-center justify-between shrink-0"
       >
         <span>open corkboard</span>
         <span className="text-base">↗</span>
