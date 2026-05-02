@@ -10,6 +10,14 @@
 
 # production
 /build
+/dist
+
+# data pipeline cache
+/scripts/.cache
+
+# local Claude Code settings
+/.claude
+/CLAUDE.md
 
 # misc
 .DS_Store
